@@ -21,7 +21,7 @@ import datastructures.MappingFile;
 import datastructures.VCFEntry;
 import datastructures.VCFParser;
 
-public class SNP2Structure {
+public class SNPViz {
 	
 	public static String CLASS_NAME = "title";
 	public static String VERSION = "x.x";
@@ -31,7 +31,7 @@ public class SNP2Structure {
 //	private VCFParser vcfInput;
 
 
-	public SNP2Structure(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile) {
+	public SNPViz(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile) {
 		// TODO Auto-generated constructor stub
 		long start = System.currentTimeMillis();
 		this.mappingFile=new MappingFile(mappingFile);
@@ -153,7 +153,7 @@ public class SNP2Structure {
 			System.exit(1);
 
 		}
-		new SNP2Structure(mappingFile, gtfFile, vcfFile, referenceFile, outFile);
+		new SNPViz(mappingFile, gtfFile, vcfFile, referenceFile, outFile);
 		
 		System.out.println("finished");
 	}
@@ -162,14 +162,14 @@ public class SNP2Structure {
 		Properties properties = new Properties();
 		try {
 			//load version
-			InputStream in = SNP2Structure.class.getResourceAsStream("/version.properties");
+			InputStream in = SNPViz.class.getResourceAsStream("/version.properties");
 			properties.load(in);
-			SNP2Structure.VERSION = properties.getProperty("version");
+			SNPViz.VERSION = properties.getProperty("version");
 			in.close();
 			// load title
-			in = SNP2Structure.class.getResourceAsStream("/title.properties");
+			in = SNPViz.class.getResourceAsStream("/title.properties");
 			properties.load(in);
-			SNP2Structure.CLASS_NAME = properties.getProperty("title");
+			SNPViz.CLASS_NAME = properties.getProperty("title");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

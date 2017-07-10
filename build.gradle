@@ -26,7 +26,7 @@ import org.apache.tools.ant.filters.*
 version '0.0.1'
 
 project.ext{
-	title = "SNP2Structure"
+	title = "SNPViz"
 }
 
 allprojects {
@@ -87,7 +87,7 @@ jar {
 	zip64 true
     manifest {
         attributes("Implementation-Title": project.title,
-                "Implementation-Version": version, "main-Class": "main.SNP2Structure")
+                "Implementation-Version": version, "main-Class": "main.SNPViz")
     }
     doFirst {
         from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
