@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<script language="JavaScript" type="text/javascript" src="https://cdn.rawgit.com/arose/ngl/339693d2/dist/ngl.js"></script>
+	<script language="JavaScript" type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>
+	<script language="JavaScript" type="text/javascript" src="https://cdn.rawgit.com/hammerlab/vcf.js/017583dd/vcf.js"></script>
+</head>
+<body>
+
+	<input type="file" id="vcfFiles" name="vcfFiles[]" multiple /> <br/>
+
+	<div>available IDs:<select id=selectIds onChange="viewFromSelected(this)"><option value="">Select...</option></select><INPUT TYPE="button" NAME="colorButton" VALUE="colorChanges" onClick="colorDifferently()"></div>
+
+	<script>
+		function viewFromSelected(selectedObject){
+			combID = selectedObject.value;
+			if(combID.length==0){
+				return;
+			}
+			pdbID = combID.split(":")[0];
+			colorChain = combID.split(":")[1].split("_")[0];
+			colorPosition = combID.split(":")[1].split("_")[1];
+			setPDBStructure();
+		}
+	</script>
+	
+	<script>
+		var stage;
+		var structure;
+		var pdbID = "1crn";
+		var colorPosition="";
+		var colorChain="";
+		var modifiedAA = "";
+		function setPDBStructure(){
+			stage.removeAllComponents();
+			stage.loadFile("rcsb://"+pdbID, {defaultRepresentation:true}).then(function(o){structure=o.structure;});
+		}
+		document.addEventListener( "DOMContentLoaded", function() {
+			stage = new NGL.Stage( "viewport" );
+			setPDBStructure();
+		} );
+	</script>
+
+	<script>
+	function handleFileSelect(evt) {
+		var files = evt.target.files; // FileList object
+		var r = new FileReader();
+		r.onload = function(e) { 
+			var contents = e.target.result;             
+			var ct = r.result;
+			var vcfContent = ct.split('\n');
+			for(i=0; i<vcfContent.length; i++){
+				if(vcfContent[i].length == 0 || vcfContent[i].startsWith("#")){
+					continue;
+				}
+				vcfEntry = vcfContent[i].split("\t");
+				if(vcfEntry[7].length > 0){
+					infos = vcfEntry[7].split(";");
+					for(i=0; i<infos.length; i++){
+						info=infos[i];
+						if(info.startsWith("PDB")){
+							pdbIds = info.split("=")[1].split(",");
+							arr= [];
+							for(j=0; j<pdbIds.length; j++){
+								var pdbID;
+								var chain = "";
+								var position;
+								if(pdbIds[j].indexOf(":") != -1){
+									pdbID = pdbIds[j].split(":")[0];
+									chain = pdbIds[j].split(":")[1].split("_")[0];
+									position = pdbIds[j].split(":")[1].split("_")[1].split("!")[0];
+									modifiedAA = pdbIds[j].split(":")[1].split("_")[1].split("!")[1];
+								}else{
+									pdbID = pdbIds[j].split("_")[0];
+									position = pdbIds[j].split("_")[1].split("!")[0];
+									modifiedAA = pdbIds[j].split("_")[1].split("!")[1];
+								}
+								arr.push(pdbID+":"+chain+"_"+position);
+							}
+						}
+						// get select list
+						var selectList = document.getElementById("selectIds");
+						selectList.options.length=0;
+
+						//Create and append the options
+						var opt = document.createElement("option");
+						opt.setAttribute("value", "");
+						opt.text = "Select...";
+						selectList.appendChild(opt);
+						for (var i = 0; i < arr.length; i++) {
+							var option = document.createElement("option");
+							option.setAttribute("value", arr[i]);
+							option.text = arr[i];
+							selectList.appendChild(option);
+						}
+					}
+				}
+			}
+		}
+		r.readAsText(files[0]);
+	}
+
+  document.getElementById('vcfFiles').addEventListener('change', handleFileSelect, false);
+</script>
+
+	<script>
+		function loadPDB() {
+			var e = document.getElementsByName('pdbField')[0];
+  			pdbID = e.value;
+			setPDBStructure();
+		}
+	</script>
+
+	<script>
+		function colorDifferently() {
+  			var e = document.getElementsByName('colorField')[0];
+  			var val = colorPosition;
+			var region = 10;
+			if(val.lenght==0){
+				return;
+			}
+			var lowerBound = Math.max(0,val-region);
+			var upperBound = Math.min(val-0+region,structure.residueStore.length);
+			var row1 = '<tr>';
+			var row2 = '<tr>';
+			var row3 = '<tr>';
+			var count = lowerBound;
+			var colorVal = val;//+colorChain;
+			if(colorChain.length > 0){
+				colorVal+=":"+colorChain;
+			}
+			console.log(colorVal);
+			var schemeId = NGL.ColormakerRegistry.addSelectionScheme([
+  				[	"red", colorVal],
+  				[	"white", "*"]
+			], "test");
+			stage.getRepresentationsByName()
+				.setParameters({colorScheme:schemeId});
+			count=lowerBound
+			structure.eachResidue(function(r){
+				//if(colorChain.length == 0 || r.chainid == colorChain){
+					if(count == val){
+						row1 += '<td bgcolor = "#FF0000">' + r.resname + '</td>';
+						row2 += '<td bgcolor = "#FF0000">' + r.sstruc + '</td>';
+						row3 += '<td bgcolor = "#FF0000">' + modifiedAA + '</td>';
+					}else{
+						row1 += '<td>' + r.resname + '</td>';
+						row2 += '<td>' + r.sstruc + '</td>';
+						row3 += '<td>' + r.resname + '</td>';
+					}
+				//}
+				count++;
+				//if(count > upperBound){
+				//	count = lowerBound;
+				//	row1 += '</tr><tr>';
+				//	row2 += '</tr><tr>';
+				//}
+			}, new NGL.Selection(lowerBound+"colorChain-"+upperBound+"colorChain"));
+			row1 += '</tr>';
+			row2 += '</tr>';
+			row3 += '</tr>';
+			var rows = row1 + row2 + row3;
+			dataTable.innerHTML =rows;
+		}
+	</script>
+
+	<div id="viewport" style="width:800px; height:400px;"></div>
+
+	<table id="dataTable">
+	</table>
+</body>
+</html>
