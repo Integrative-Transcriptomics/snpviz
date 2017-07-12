@@ -2,19 +2,14 @@ package datastructures;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.zip.GZIPInputStream;
 
 import org.biojava.bio.seq.DNATools;
 import org.biojava.bio.seq.RNATools;
@@ -86,14 +81,18 @@ public class ExonMapping implements Serializable {
 		this.pos2ens = new HashMap<String, Map<Integer, Set<String>>>();
 		try {
 			BufferedReader br;
-			if(file.endsWith(".gz")){
-				InputStream fileStream = new FileInputStream(file);
-				InputStream gzipStream = new GZIPInputStream(fileStream);
-				Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
-				br = new BufferedReader(decoder);
-			}else{
-				br = new BufferedReader(new FileReader(new File(file)));
+			br = Utilities.getReader(file);
+			if(br == null){
+				return;
 			}
+//			if(file.endsWith(".gz")){
+//				InputStream fileStream = new FileInputStream(file);
+//				InputStream gzipStream = new GZIPInputStream(fileStream);
+//				Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
+//				br = new BufferedReader(decoder);
+//			}else{
+//				br = new BufferedReader(new FileReader(new File(file)));
+//			}
 			String currLine = "";
 			while((currLine = br.readLine()) != null){
 				if(currLine.startsWith("#")){
