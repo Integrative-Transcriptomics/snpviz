@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
 import org.biojava.bio.seq.DNATools;
@@ -26,33 +27,61 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
 
+import utilities.Utilities;
+
 public class ExonMapping implements Serializable {
 
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5677894313743363829L;
 	Map<String, Map<Integer, Set<String>>> pos2ens;
-	VCFParser vcfInput;
+	Map<String, Set<Triplet<Integer, Integer, String>>> combinedMap;
+//	VCFParser vcfInput;
 	MappingFile mappingFile;
 	String referenceFile;
 	VCFEntry vcfEntry;
-	
+
 	public ExonMapping(String file, VCFEntry vcfEntry, MappingFile mappingFile, String referenceFile){
-//		this.vcfInput = vcfInput;
 		this.mappingFile = mappingFile;
 		this.referenceFile = referenceFile;
 		parse(file, vcfEntry);
 	}
 
-	public ExonMapping(String file, VCFParser vcfInput, MappingFile mappingFile, String referenceFile){
-		this.vcfInput = vcfInput;
+	public ExonMapping(String file, MappingFile mappingFile, String referenceFile){
+//		this.vcfInput = vcfInput;
 		this.mappingFile = mappingFile;
 		this.referenceFile = referenceFile;
 		parse(file);
 	}
 	
+	public VCFEntry analyzeEntry(VCFEntry vcfEntry){
+		Set<Triplet<Integer, Integer, String>> relevantExons = getRelevantExons(vcfEntry.getPosition(), vcfEntry.getReference());
+		for(Triplet<Integer, Integer, String> currExon: relevantExons){
+			Set<String> pdbIds = this.mappingFile.getIDs(currExon.getThird());
+			vcfEntry.addPdbIds(getPositionForIds(pdbIds, vcfEntry.getReference(), currExon.getFirst(), currExon.getSecond(), vcfEntry.getPosition(), vcfEntry.getRefBase(), vcfEntry.getAltBase()));
+		}
+		return vcfEntry;
+	}
+
+	/**
+	 * @param position
+	 * @param reference 
+	 * @return
+	 */
+	private Set<Triplet<Integer, Integer, String>> getRelevantExons(Integer position, String reference) {
+		Set<Triplet<Integer, Integer, String>> result = new HashSet<Triplet<Integer, Integer, String>>();
+		if(this.combinedMap.containsKey(reference)){
+			for(Triplet<Integer, Integer, String> currExon: this.combinedMap.get(reference)){
+				if(currExon.getFirst() > position){
+					break;
+				}else if(currExon.getSecond()<position){
+					continue;
+				}else{
+					result.add(currExon);
+				}
+			}
+		}
+		return result;
+	}
+
 	private void parse(String file, VCFEntry vcfEntry) {
 		this.pos2ens = new HashMap<String, Map<Integer, Set<String>>>();
 		try {
@@ -75,28 +104,24 @@ public class ExonMapping implements Serializable {
 					continue;
 				}
 				String ref = splitted[0];
-//				if(this.vcfInput.getEntries(ref).size()==0){
-//					continue;
-//				}
 				Integer from = Integer.parseInt(splitted[3]);
 				Integer to = Integer.parseInt(splitted[4]);
-//				for(VCFEntry vcfEntry: this.vcfInput.getEntries(ref)){
-					if(vcfEntry.getPosition() >= from && vcfEntry.getPosition() <= to){
-						String ids = splitted[8];
-						String transcriptID = "";
-						for(String field: ids.split(";")){
-							field = field.trim();
-							if(field.contains("transcript_id")){
-								String[] splittedField = field.split(" ");
-								transcriptID = splittedField[1].trim().replace("\"", "");
-								break;
-							}
+				if(vcfEntry.getPosition() >= from && vcfEntry.getPosition() <= to){
+					String ids = splitted[8];
+					String transcriptID = "";
+					for(String field: ids.split(";")){
+						field = field.trim();
+						if(field.contains("transcript_id")){
+							String[] splittedField = field.split(" ");
+							transcriptID = splittedField[1].trim().replace("\"", "");
+							break;
 						}
-						Set<String> pdbIds = this.mappingFile.getIDs(transcriptID);
-						vcfEntry.addPdbIds(getPositionForIds(pdbIds, ref, from, to, vcfEntry.getPosition(), vcfEntry.getRefBase(), vcfEntry.getAltBase()));
-						//						vcfEntry.addPdbIds(this.mappingFile.getIDs(transcriptID));
 					}
-//				}
+					Set<String> pdbIds = this.mappingFile.getIDs(transcriptID);
+					vcfEntry.addPdbIds(getPositionForIds(pdbIds, ref, from, to, vcfEntry.getPosition(), vcfEntry.getRefBase(), vcfEntry.getAltBase()));
+					//						vcfEntry.addPdbIds(this.mappingFile.getIDs(transcriptID));
+				}
+				//				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -105,52 +130,44 @@ public class ExonMapping implements Serializable {
 	}
 
 	private void parse(String file) {
-		this.pos2ens = new HashMap<String, Map<Integer, Set<String>>>();
-		try {
-			BufferedReader br;
-			if(file.endsWith(".gz")){
-				InputStream fileStream = new FileInputStream(file);
-				InputStream gzipStream = new GZIPInputStream(fileStream);
-				Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
-				br = new BufferedReader(decoder);
-			}else{
-				br = new BufferedReader(new FileReader(new File(file)));
-			}
+		this.combinedMap = new HashMap<String, Set<Triplet<Integer, Integer, String>>>();
+		BufferedReader br = Utilities.getReader(file);
+		if(br != null){
 			String currLine = "";
-			while((currLine = br.readLine()) != null){
-				if(currLine.startsWith("#")){
-					continue;
-				}
-				String[] splitted = currLine.split("\t");
-				if(!splitted[2].contains("exon")){
-					continue;
-				}
-				String ref = splitted[0];
-				if(this.vcfInput.getEntries(ref).size()==0){
-					continue;
-				}
-				Integer from = Integer.parseInt(splitted[3]);
-				Integer to = Integer.parseInt(splitted[4]);
-				for(VCFEntry vcfEntry: this.vcfInput.getEntries(ref)){
-					if(vcfEntry.getPosition() >= from && vcfEntry.getPosition() <= to){
-						String ids = splitted[8];
-						String transcriptID = "";
-						for(String field: ids.split(";")){
-							field = field.trim();
-							if(field.contains("transcript_id")){
-								String[] splittedField = field.split(" ");
-								transcriptID = splittedField[1].trim().replace("\"", "");
-								break;
-							}
+			try {
+				while((currLine = br.readLine()) != null){
+					if(currLine.startsWith("#")){
+						continue;
+					}
+					String[] splitted = currLine.split("\t");
+					if(!splitted[2].contains("exon")){
+						continue;
+					}
+					String ref = splitted[0];
+					Integer from = Integer.parseInt(splitted[3]);
+					Integer to = Integer.parseInt(splitted[4]);
+					String ids = splitted[8];
+					String transcriptID = "";
+					for(String field: ids.split(";")){
+						field = field.trim();
+						if(field.contains("transcript_id")){
+							String[] splittedField = field.split(" ");
+							transcriptID = splittedField[1].trim().replace("\"", "");
+							break;
 						}
-						Set<String> pdbIds = this.mappingFile.getIDs(transcriptID);
-						vcfEntry.addPdbIds(getPositionForIds(pdbIds, ref, from, to, vcfEntry.getPosition(), vcfEntry.getRefBase(), vcfEntry.getAltBase()));
-						//						vcfEntry.addPdbIds(this.mappingFile.getIDs(transcriptID));
+					}
+					if(transcriptID.length()>0){
+						Set<Triplet<Integer, Integer, String>> positions = new TreeSet<Triplet<Integer, Integer, String>>();
+						if(this.combinedMap.containsKey(ref)){
+							positions = this.combinedMap.get(ref);
+						}
+						positions.add(new Triplet<Integer, Integer, String>(from, to, transcriptID));
+						this.combinedMap.put(ref, positions);
 					}
 				}
+			} catch (NumberFormatException | IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -292,9 +309,13 @@ public class ExonMapping implements Serializable {
 		}
 		return exonSequence.toString();
 	}
-	
+
 	public VCFEntry getVCFEntry(){
 		return this.vcfEntry;
+	}
+	
+	public Map<String, Set<Triplet<Integer, Integer, String>>> getMap(){
+		return this.combinedMap;//TODO
 	}
 
 }

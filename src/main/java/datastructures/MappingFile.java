@@ -16,7 +16,8 @@ public class MappingFile implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1284219139313387374L;
-	Map<String, Set<String>> ens2pdb = new HashMap<String, Set<String>>();
+	
+	private Map<String, Set<String>> ens2pdb = new HashMap<String, Set<String>>();
 	
 	public MappingFile(String file){
 		parse(file);
@@ -46,12 +47,11 @@ public class MappingFile implements Serializable {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public Set<String> getIDs(String ensID){
+	public synchronized Set<String> getIDs(String ensID){
 		if(this.ens2pdb.containsKey(ensID)){
 			return this.ens2pdb.get(ensID);
 		}else{

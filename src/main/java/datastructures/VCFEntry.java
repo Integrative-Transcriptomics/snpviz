@@ -31,6 +31,9 @@ public class VCFEntry implements Serializable {
 	public void addPdbIds(Set<String> pdbIds){
 		this.pdbIds.addAll(pdbIds);
 	}
+	public Set<String> getPDBIds(){
+		return this.pdbIds;
+	}
 	public Integer getPosition() {
 		return position;
 	}

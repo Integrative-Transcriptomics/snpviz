@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author Alexander Seitz
  *
  */
-public class Triplet<A, B,C> implements Serializable {
+public class Triplet<A extends Comparable<A>, B extends Comparable<B>, C> implements Serializable, Comparable<Triplet<A,B,C>> {
 	
 	/**
 	 * 
@@ -35,6 +35,19 @@ public class Triplet<A, B,C> implements Serializable {
 	
 	public C getThird(){
 		return this.third;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Triplet<A, B, C> o) {
+		// TODO Auto-generated method stub
+		int res = this.first.compareTo(o.getFirst());
+		if(res == 0){
+			res = this.second.compareTo(o.getSecond());
+		}
+		return res;
 	}
 
 }
