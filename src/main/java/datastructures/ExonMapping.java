@@ -33,18 +33,60 @@ public class ExonMapping implements Serializable {
 	MappingFile mappingFile;
 	String referenceFile;
 	VCFEntry vcfEntry;
+	Map<String, String> reference;
+	Boolean keepRefInMemory = false;
 
-	public ExonMapping(String file, VCFEntry vcfEntry, MappingFile mappingFile, String referenceFile){
+	public ExonMapping(String file, VCFEntry vcfEntry, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory){
 		this.mappingFile = mappingFile;
 		this.referenceFile = referenceFile;
+		this.keepRefInMemory = keepRefInMemory;
+		if(this.keepRefInMemory) {
+			parseAndKeepReference();
+		}
+		this.reference = new HashMap<String, String>();
 		parse(file, vcfEntry);
 	}
 
-	public ExonMapping(String file, MappingFile mappingFile, String referenceFile){
-//		this.vcfInput = vcfInput;
+	public ExonMapping(String file, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory){
 		this.mappingFile = mappingFile;
 		this.referenceFile = referenceFile;
+		this.keepRefInMemory = keepRefInMemory;
+		if(this.keepRefInMemory) {
+			parseAndKeepReference();
+		}
+		this.reference = new HashMap<String, String>();
 		parse(file);
+	}
+
+	/**
+	 * 
+	 */
+	private void parseAndKeepReference() {
+		this.reference = new HashMap<String, String>();
+		try {
+			BufferedReader br = Utilities.getReader(this.referenceFile);
+			String currLine = "";
+			StringBuffer currSequence = new StringBuffer();
+			String currHeader = "";
+			while((currLine = br.readLine())!= null){
+				if(currLine.startsWith(";")){
+					continue;
+				}
+				if(currLine.startsWith(">")){
+					if(currHeader.length()>0) {
+						System.out.println(currHeader+"\t"+currSequence.length());
+						this.reference.put(currHeader, currSequence.toString());
+					}
+					currHeader = currLine.substring(1);
+					currSequence = new StringBuffer();
+				}else {
+					currSequence.append(currLine.trim());
+				}
+			}
+			this.reference.put(currHeader, currSequence.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public VCFEntry analyzeEntry(VCFEntry vcfEntry){
@@ -85,14 +127,6 @@ public class ExonMapping implements Serializable {
 			if(br == null){
 				return;
 			}
-//			if(file.endsWith(".gz")){
-//				InputStream fileStream = new FileInputStream(file);
-//				InputStream gzipStream = new GZIPInputStream(fileStream);
-//				Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
-//				br = new BufferedReader(decoder);
-//			}else{
-//				br = new BufferedReader(new FileReader(new File(file)));
-//			}
 			String currLine = "";
 			while((currLine = br.readLine()) != null){
 				if(currLine.startsWith("#")){
@@ -248,7 +282,6 @@ public class ExonMapping implements Serializable {
 				modAA = ((Symbol)trip.iterator().next()).getName();
 				modRevAA = ((Symbol)rev.iterator().next()).getName();
 			} catch (IllegalSymbolException | IllegalAlphabetException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			dnaSequences.add(new Triplet<String, Integer, String>(exonSequence.substring(start,end), pos, modAA));
@@ -269,6 +302,9 @@ public class ExonMapping implements Serializable {
 	}
 
 	private String getExonSequence(String ref, Integer from, Integer to) {
+		if(this.keepRefInMemory && this.reference.containsKey(ref)) {
+			return this.reference.get(ref).substring(Math.max(0, from-1), to);
+		}
 		StringBuffer exonSequence = new StringBuffer();
 		try {
 			@SuppressWarnings("resource")
@@ -311,10 +347,6 @@ public class ExonMapping implements Serializable {
 
 	public VCFEntry getVCFEntry(){
 		return this.vcfEntry;
-	}
-	
-	public Map<String, Set<Triplet<Integer, Integer, String>>> getMap(){
-		return this.combinedMap;//TODO
 	}
 
 }

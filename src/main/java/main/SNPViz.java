@@ -31,8 +31,7 @@ public class SNPViz {
 	private VCFParser vcfInput;
 
 
-	public SNPViz(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile, Boolean runSpark) {
-		// TODO Auto-generated constructor stub
+	public SNPViz(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile, Boolean runSpark, Boolean keepRefInMemory) {
 		long start = System.currentTimeMillis();
 		this.mappingFile=new MappingFile(mappingFile);
 		long map = System.currentTimeMillis();
@@ -42,7 +41,7 @@ public class SNPViz {
 		long annotation = 0l;
 
 		if(runSpark){
-			SparkDoVCF sp = new SparkDoVCF(vcfFile, gtfFile, this.mappingFile, reference);
+			SparkDoVCF sp = new SparkDoVCF(vcfFile, gtfFile, this.mappingFile, reference, keepRefInMemory);
 			result = sp.getVCFEntries();
 			annotation = System.currentTimeMillis();
 		}else{
@@ -50,7 +49,7 @@ public class SNPViz {
 			long vcf = System.currentTimeMillis();
 			System.out.println("reading the vcfFile took "+(vcf-map)/1000+"s");
 
-			ExonMapping em = new ExonMapping(gtfFile, this.mappingFile, reference);
+			ExonMapping em = new ExonMapping(gtfFile, this.mappingFile, reference, keepRefInMemory);
 			long exon = System.currentTimeMillis();
 			System.out.println("reading the gtf file took "+(exon-vcf)/1000+"s" + "\t");
 			
@@ -95,6 +94,7 @@ public class SNPViz {
 		options.addOption("h", "help", false, "show this help page");
 		options.addOption("o", "output", true, "output vcf file [<INPUT>_modified.vcf]");
 		options.addOption("s", "spark", false, "run with apacheSpark parallelization");
+		options.addOption("k", "keep", false, "keep reference in Memory");
 		options.addOption(Option.builder("m")
 				.longOpt("idmap")
 				.required()
@@ -132,6 +132,7 @@ public class SNPViz {
 		String referenceFile = "";
 		String outFile = "";
 		Boolean runSpark = false;
+		Boolean keepRefInMemory = false;
 
 		try {
 			CommandLine cmd = parser.parse(helpOptions, args);
@@ -156,13 +157,16 @@ public class SNPViz {
 			if(cmd.hasOption("s")){
 				runSpark = true;
 			}
+			if(cmd.hasOption("k")) {
+				keepRefInMemory = true;
+			}
 		} catch (ParseException e) {
 			helpformatter.printHelp(CLASS_NAME, options);
 			System.err.println(e.getMessage());
 			System.exit(1);
 
 		}
-		new SNPViz(mappingFile, gtfFile, vcfFile, referenceFile, outFile, runSpark);
+		new SNPViz(mappingFile, gtfFile, vcfFile, referenceFile, outFile, runSpark, keepRefInMemory);
 
 		System.out.println("finished");
 	}

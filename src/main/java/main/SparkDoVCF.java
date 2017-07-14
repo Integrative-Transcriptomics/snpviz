@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 
@@ -21,13 +20,14 @@ public class SparkDoVCF implements Serializable {
 	private List<VCFEntry> vcfEntries = new LinkedList<VCFEntry>();
 	
 	@SuppressWarnings("resource")
-	public SparkDoVCF(String file, String gtfFile, MappingFile mappingFile, String reference){
+	public SparkDoVCF(String file, String gtfFile, MappingFile mappingFile, String reference, Boolean keepRefInMemory){
 		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName(SparkDoVCF.class.getSimpleName());
+		ExonMapping em = new ExonMapping(gtfFile, mappingFile, reference, keepRefInMemory);
 		this.vcfEntries = new JavaSparkContext(conf).textFile(new File(file).getAbsolutePath())
 				.filter(s -> !s.startsWith("#"))
 				.map(s -> s.split("\t"))
 				.map(f -> new VCFEntry(f[0], Integer.parseInt(f[1]), f[3], f[4], new HashSet<String>()))
-				.map(f -> new ExonMapping(gtfFile, mappingFile, reference).analyzeEntry(f))
+				.map(f -> em.analyzeEntry(f))
 				.filter(new Function<VCFEntry, Boolean>(){
 					private static final long serialVersionUID = 753333851848380013L;
 					@Override

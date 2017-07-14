@@ -42,7 +42,6 @@ public class Triplet<A extends Comparable<A>, B extends Comparable<B>, C> implem
 	 */
 	@Override
 	public int compareTo(Triplet<A, B, C> o) {
-		// TODO Auto-generated method stub
 		int res = this.first.compareTo(o.getFirst());
 		if(res == 0){
 			res = this.second.compareTo(o.getSecond());
