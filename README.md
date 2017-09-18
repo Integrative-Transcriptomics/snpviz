@@ -3,7 +3,7 @@
 
 ## Dependencies:
 
-- jdk7+
+- jdk8+
 - gradle
 
 ## needed additional information:
