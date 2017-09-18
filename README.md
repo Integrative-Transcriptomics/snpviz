@@ -1,4 +1,5 @@
-# DACCOR - Detection charACterization and reConstruction of Repetitive regions in genomes
+# SNPViz - Visualization of SNPs in proteins
+
 
 ## Dependencies:
 
@@ -20,4 +21,5 @@ http://genome.ucsc.edu/cgi-bin/hgTables
 ## Compilation
 
 To compile the program type
-<pre><code>gradle build shadowJar</code></pre>
+
+`gradle build shadowJar`
