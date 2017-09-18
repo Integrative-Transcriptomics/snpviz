@@ -12,6 +12,10 @@
 
 ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz
 
+For the example, the smaller file will suffice:
+
+ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.example
+
 ### genome annotation of the human genome:
 
 On the following Website you need to select the desired human release ans select "Track" to "TransMapEnsembl"!!! In order to download the file, you need to give a filename in the "output file" field
