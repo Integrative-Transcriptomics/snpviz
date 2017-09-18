@@ -14,7 +14,7 @@ ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapp
 
 ### genome annotation of the human genome:
 
-On the following Website you need to select the desired human release ans select "Track" to "TransMapEnsembl"!!!
+On the following Website you need to select the desired human release ans select "Track" to "TransMapEnsembl"!!! In order to download the file, you need to give a filename in the "output file" field
 
 http://genome.ucsc.edu/cgi-bin/hgTables
 
