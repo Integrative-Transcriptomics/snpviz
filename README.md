@@ -22,7 +22,10 @@ You need to donload the human reference genome that you want to use. Keep in min
 
 ### genome annotation of the human genome:
 
-On the following Website you need to select the desired human release ans select "Track" to "TransMapEnsembl"!!! In order to download the file, you need to give a filename in the "output file" field
+On the following Website you need to select the desired human release and select "Track" to "TransMapEnsembl"!!!
+You need to select "GTF" as output format.
+Also make sure you download the "complete genome" or at least the portions of the genome you are interested in. (The example input lies on chromosome 20)
+In order to download the file, you need to give a filename in the "output file" field. 
 
 http://genome.ucsc.edu/cgi-bin/hgTables
 
