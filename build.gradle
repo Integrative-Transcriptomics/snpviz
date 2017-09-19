@@ -14,7 +14,7 @@ plugins {
     
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
+//apply plugin: 'com.github.johnrengelman.shadow'
 
 shadowJar {
    zip64 true
@@ -37,6 +37,7 @@ allprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'java'
+//    project.tasks.remove(jar)
     apply plugin: 'idea'
     apply plugin: 'com.jfrog.bintray'
     apply plugin: 'eclipse-wtp'
@@ -95,11 +96,12 @@ jar {
 }
 
 
-
+/*
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
+*/
 
 //artifacts {
 //    archives //sourcesJar, javadocJar
@@ -128,7 +130,7 @@ publishing {
         MyPublication(MavenPublication) {
             from components.java
             groupId 'com.uni-tuebingen.de.it.madam'
-            artifactId 'MADAM'
+            artifactId 'snpViz'
         }
     }
 }
