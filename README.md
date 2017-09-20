@@ -22,10 +22,10 @@ You need to donload the human reference genome that you want to use. Keep in min
 
 ### genome annotation of the human genome:
 
-On the following Website you need to select the desired human release and select "Track" to "TransMapEnsembl"!!!
-You need to select "GTF" as output format.
-Also make sure you download the "complete genome" or at least the portions of the genome you are interested in. (The example input lies on chromosome 20)
-In order to download the file, you need to give a filename in the "output file" field. 
+On the following Website you need to select the desired human release and select "Track" to "TransMapEnsembl"!!!<br/>
+You need to select "GTF" as output format.<br/>
+Also make sure you download the "complete genome" or at least the portions of the genome you are interested in. (The example input lies on chromosome 20)<br/>
+In order to download the file, you need to give a filename in the "output file" field.<br/>
 
 http://genome.ucsc.edu/cgi-bin/hgTables
 
@@ -33,7 +33,7 @@ http://genome.ucsc.edu/cgi-bin/hgTables
 
 To compile the program type
 
-`gradle build shadowJar`
+`gradle build`
 
 The executable jar file lies in the build/libs folder and ends with -all.jar.
 
@@ -56,3 +56,16 @@ The executable jar file lies in the build/libs folder and ends with -all.jar.
  The vcf file (-v) corresponds to the desired vcf file that you created
  
  The reference file (-r) corresponds to the genome reference you want to use (e.g. hg19).
+ 
+## Example
+
+As an example we provide a small example vcf File in the example folder. The file
+
+<pre><code>example.sh</code></pre>
+
+contains the call but you have to add the corresponding downloaded files.
+The resulting file can then be imported in the
+
+<pre><code>viewer.html</code></pre>
+
+After you select the protein you are interested in, cou can press the "color changes" button to highlight the affected amino acid.
