@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import utilities.Utilities;
+
 public class MappingFile implements Serializable {
 	
 	/**
@@ -27,7 +29,7 @@ public class MappingFile implements Serializable {
 		this.ens2pdb = new HashMap<String, Set<String>>();
 		try {
 			@SuppressWarnings("resource")
-			BufferedReader br = new BufferedReader(new FileReader(new File(file)));
+			BufferedReader br = Utilities.getReader(file);
 			String currLine = "";
 			while((currLine = br.readLine()) != null){
 				String[] splitted = currLine.split("\t",-1);

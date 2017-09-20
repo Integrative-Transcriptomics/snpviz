@@ -74,7 +74,6 @@ public class ExonMapping implements Serializable {
 				}
 				if(currLine.startsWith(">")){
 					if(currHeader.length()>0) {
-						System.out.println(currHeader+"\t"+currSequence.length());
 						this.reference.put(currHeader, currSequence.toString());
 					}
 					currHeader = currLine.substring(1);
@@ -308,7 +307,8 @@ public class ExonMapping implements Serializable {
 		StringBuffer exonSequence = new StringBuffer();
 		try {
 			@SuppressWarnings("resource")
-			BufferedReader br = new BufferedReader(new FileReader(new File(this.referenceFile)));
+//			BufferedReader br = new BufferedReader(new FileReader(new File(this.referenceFile)));
+			BufferedReader br = Utilities.getReader(this.referenceFile);
 			String currLine = "";
 			boolean currSequence = false;
 			int currStartPos = 0;
