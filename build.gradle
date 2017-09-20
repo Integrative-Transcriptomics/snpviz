@@ -14,12 +14,19 @@ plugins {
     
 }
 
-//apply plugin: 'com.github.johnrengelman.shadow'
-
+//shadowJar needed as normal jar can't handle the number of classes contained in the apache libraries
 shadowJar {
    zip64 true
 }
 
+// disable normal jar as shadowJar is used
+jar.enabled = false
+// automatically build the shadowJar
+build.dependsOn(shadowJar);
+
+artifacts {
+	shadowJar
+}
 
 
 import org.apache.tools.ant.filters.*
@@ -37,7 +44,6 @@ allprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'java'
-//    project.tasks.remove(jar)
     apply plugin: 'idea'
     apply plugin: 'com.jfrog.bintray'
     apply plugin: 'eclipse-wtp'
@@ -95,18 +101,6 @@ jar {
     }
 }
 
-
-/*
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-*/
-
-//artifacts {
-//    archives //sourcesJar, javadocJar
-//}
-
 processResources {
 	filesMatching('version.properties'){
     	expand projectVersion: project.version
@@ -124,12 +118,14 @@ eclipse.classpath.file {
     }
 }
 
+
+// needed for later automatic publishing to bintray, keep commented out
 /*
 publishing {
     publications {
         MyPublication(MavenPublication) {
             from components.java
-            groupId 'com.uni-tuebingen.de.it.madam'
+            groupId 'com.uni-tuebingen.de.it.snpviz'
             artifactId 'snpViz'
         }
     }
@@ -144,13 +140,13 @@ bintray {
     publish = true
     override = true
     pkg {
-        repo = 'MADAM'
-        name = 'MADAM'
+        repo = 'SNPVIZ'
+        name = 'SNPVIZ'
         licenses = ['GPL-3.0']
-        vcsUrl = "https://github.com/Integrative-Transcriptomics/MADAM"
+        vcsUrl = "https://github.com/Integrative-Transcriptomics/SNPVIZ"
         version {
             name = project.version
-            desc = 'The MADAM pipeline'
+            desc = 'The SNPViz Tool'
             released  = new Date()
             vcsTag = project.version
             attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
