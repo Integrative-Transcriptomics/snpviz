@@ -20,6 +20,8 @@ ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapp
 
 You need to donload the human reference genome that you want to use. Keep in mind that the next file has to correspond to your reference file.
 
+https://www.gencodegenes.org/releases/27lift37.html
+
 ### genome annotation of the human genome:
 
 On the following Website you need to select the desired human release and select "Track" to "Ensembl Genes"!!!<br/>
