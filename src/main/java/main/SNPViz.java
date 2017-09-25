@@ -3,6 +3,7 @@ package main;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -19,6 +20,7 @@ import datastructures.ExonMapping;
 import datastructures.MappingFile;
 import datastructures.VCFEntry;
 import datastructures.VCFParser;
+import utilities.ID;
 import utilities.Utilities;
 
 public class SNPViz {
@@ -31,9 +33,9 @@ public class SNPViz {
 	private VCFParser vcfInput;
 
 
-	public SNPViz(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile, Boolean runSpark, Boolean keepRefInMemory) {
+	public SNPViz(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile, Boolean runSpark, Boolean keepRefInMemory, ID fromID) {
 		long start = System.currentTimeMillis();
-		this.mappingFile=new MappingFile(mappingFile);
+		this.mappingFile=new MappingFile(mappingFile,fromID);
 		long map = System.currentTimeMillis();
 		System.out.println("reading the mapping file took "+(map-start)/1000+"s");
 
@@ -95,6 +97,7 @@ public class SNPViz {
 		options.addOption("o", "output", true, "output vcf file [<INPUT>_modified.vcf]");
 		options.addOption("s", "spark", false, "run with apacheSpark parallelization");
 		options.addOption("k", "keep", false, "keep reference in Memory");
+		options.addOption("d", "id", true, "ID type for the genes ["+ID.EnsemblTRS+"]");
 		options.addOption(Option.builder("m")
 				.longOpt("idmap")
 				.required()
@@ -133,11 +136,14 @@ public class SNPViz {
 		String outFile = "";
 		Boolean runSpark = false;
 		Boolean keepRefInMemory = false;
+		ID fromID = ID.EnsemblTRS;
 
 		try {
 			CommandLine cmd = parser.parse(helpOptions, args);
 			if (cmd.hasOption('h')) {
 				helpformatter.printHelp(CLASS_NAME, options);
+				System.err.println("Posible IDs:");
+				System.err.println(Arrays.asList(ID.values()));
 				System.exit(1);
 			}
 			cmd = parser.parse(options, args);
@@ -160,13 +166,27 @@ public class SNPViz {
 			if(cmd.hasOption("k")) {
 				keepRefInMemory = true;
 			}
+			if(cmd.hasOption("d")) {
+				String from = cmd.getOptionValue("d");
+				try {
+					fromID = ID.valueOf(from);
+				}catch (Exception e) {
+					helpformatter.printHelp(CLASS_NAME, options);
+					System.err.println("Given ID not valied: "+from);
+					System.err.println("Possible IDs: ");
+					System.err.println(Arrays.asList(ID.values()));
+					System.exit(1);
+				}
+			}
 		} catch (ParseException e) {
 			helpformatter.printHelp(CLASS_NAME, options);
 			System.err.println(e.getMessage());
+			System.err.println("Posible IDs:");
+			System.err.println(Arrays.asList(ID.values()));
 			System.exit(1);
 
 		}
-		new SNPViz(mappingFile, gtfFile, vcfFile, referenceFile, outFile, runSpark, keepRefInMemory);
+		new SNPViz(mappingFile, gtfFile, vcfFile, referenceFile, outFile, runSpark, keepRefInMemory, fromID);
 
 		System.out.println("finished");
 	}

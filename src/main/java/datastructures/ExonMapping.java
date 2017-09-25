@@ -36,16 +36,16 @@ public class ExonMapping implements Serializable {
 	Map<String, String> reference;
 	Boolean keepRefInMemory = false;
 
-	public ExonMapping(String file, VCFEntry vcfEntry, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory){
-		this.mappingFile = mappingFile;
-		this.referenceFile = referenceFile;
-		this.keepRefInMemory = keepRefInMemory;
-		if(this.keepRefInMemory) {
-			parseAndKeepReference();
-		}
-		this.reference = new HashMap<String, String>();
-		parse(file, vcfEntry);
-	}
+//	public ExonMapping(String file, VCFEntry vcfEntry, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory){
+//		this.mappingFile = mappingFile;
+//		this.referenceFile = referenceFile;
+//		this.keepRefInMemory = keepRefInMemory;
+//		if(this.keepRefInMemory) {
+//			parseAndKeepReference();
+//		}
+//		this.reference = new HashMap<String, String>();
+//		parse(file, vcfEntry);
+//	}
 
 	public ExonMapping(String file, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory){
 		this.mappingFile = mappingFile;
@@ -118,48 +118,48 @@ public class ExonMapping implements Serializable {
 		return result;
 	}
 
-	private void parse(String file, VCFEntry vcfEntry) {
-		this.pos2ens = new HashMap<String, Map<Integer, Set<String>>>();
-		try {
-			BufferedReader br;
-			br = Utilities.getReader(file);
-			if(br == null){
-				return;
-			}
-			String currLine = "";
-			while((currLine = br.readLine()) != null){
-				if(currLine.startsWith("#")){
-					continue;
-				}
-				String[] splitted = currLine.split("\t");
-				if(!splitted[2].contains("exon")){
-					continue;
-				}
-				String ref = splitted[0];
-				Integer from = Integer.parseInt(splitted[3]);
-				Integer to = Integer.parseInt(splitted[4]);
-				if(vcfEntry.getPosition() >= from && vcfEntry.getPosition() <= to){
-					String ids = splitted[8];
-					String transcriptID = "";
-					for(String field: ids.split(";")){
-						field = field.trim();
-						if(field.contains("transcript_id")){
-							String[] splittedField = field.split(" ");
-							transcriptID = splittedField[1].trim().replace("\"", "");
-							break;
-						}
-					}
-					Set<String> pdbIds = this.mappingFile.getIDs(transcriptID);
-					vcfEntry.addPdbIds(getPositionForIds(pdbIds, ref, from, to, vcfEntry.getPosition(), vcfEntry.getRefBase(), vcfEntry.getAltBase()));
-					//						vcfEntry.addPdbIds(this.mappingFile.getIDs(transcriptID));
-				}
-				//				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		this.vcfEntry = vcfEntry;
-	}
+//	private void parse(String file, VCFEntry vcfEntry) {
+//		this.pos2ens = new HashMap<String, Map<Integer, Set<String>>>();
+//		try {
+//			BufferedReader br;
+//			br = Utilities.getReader(file);
+//			if(br == null){
+//				return;
+//			}
+//			String currLine = "";
+//			while((currLine = br.readLine()) != null){
+//				if(currLine.startsWith("#")){
+//					continue;
+//				}
+//				String[] splitted = currLine.split("\t");
+//				if(!splitted[2].contains("exon")){
+//					continue;
+//				}
+//				String ref = splitted[0];
+//				Integer from = Integer.parseInt(splitted[3]);
+//				Integer to = Integer.parseInt(splitted[4]);
+//				if(vcfEntry.getPosition() >= from && vcfEntry.getPosition() <= to){
+//					String ids = splitted[8];
+//					String transcriptID = "";
+//					for(String field: ids.split(";")){
+//						field = field.trim();
+//						if(field.contains("transcript_id")){
+//							String[] splittedField = field.split(" ");
+//							transcriptID = splittedField[1].trim().replace("\"", "");
+//							break;
+//						}
+//					}
+//					Set<String> pdbIds = this.mappingFile.getIDs(transcriptID);
+//					vcfEntry.addPdbIds(getPositionForIds(pdbIds, ref, from, to, vcfEntry.getPosition(), vcfEntry.getRefBase(), vcfEntry.getAltBase()));
+//					//						vcfEntry.addPdbIds(this.mappingFile.getIDs(transcriptID));
+//				}
+//				//				}
+//			}
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		this.vcfEntry = vcfEntry;
+//	}
 
 	private void parse(String file) {
 		this.combinedMap = new HashMap<String, Set<Triplet<Integer, Integer, String>>>();

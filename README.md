@@ -24,7 +24,8 @@ https://www.gencodegenes.org/releases/27lift37.html
 
 ### genome annotation of the human genome:
 
-On the following Website you need to select the desired human release and select "Track" to "Ensembl Genes"!!!<br/>
+On the following Website you need to select the desired human release and "Track" (e.g. "Ensembl Genes")!<br/>
+Make sure you use a track that is contained in the ID mapping file<br/>
 You need to select "GTF" as output format.<br/>
 Also make sure you download the "complete genome" or at least the portions of the genome you are interested in. (The example input lies on chromosome 20)<br/>
 In order to download the file, you need to give a filename in the "output file" field.<br/>
@@ -40,6 +41,7 @@ To compile the program type
 The executable jar file lies in the build/libs folder and ends with -all.jar.
 
 ## Parameters:
+ - -d,--id <arg>       ID type for the genes [Ensembl]
  - -g,--gtf <arg>      the gtf file
  - -h,--help           show this help page
  - -k,--keep           keep reference in Memory
@@ -58,6 +60,10 @@ The executable jar file lies in the build/libs folder and ends with -all.jar.
  The vcf file (-v) corresponds to the desired vcf file that you created
  
  The reference file (-r) corresponds to the genome reference you want to use (e.g. hg19).
+ 
+ The possible IDs to use are:
+ 
+ UniProtKBAC, UniProtKBID, EntrezGene, RefSeq, GI, PDB, GO, UniRef100, UniRef90, UniRef50, UniParc, PIR, NCBItaxon, MIM, UniGene, PubMed, EMBL, EMBLCDS, Ensembl, EnsemblTRS, EnsemblPRO, PubMedAdditional
  
 ## Example
 
