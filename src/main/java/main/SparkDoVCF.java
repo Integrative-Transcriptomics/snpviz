@@ -20,9 +20,9 @@ public class SparkDoVCF implements Serializable {
 	private List<VCFEntry> vcfEntries = new LinkedList<VCFEntry>();
 	
 	@SuppressWarnings("resource")
-	public SparkDoVCF(String file, String gtfFile, MappingFile mappingFile, String reference, Boolean keepRefInMemory){
+	public SparkDoVCF(String file, String gtfFile, MappingFile mappingFile, String reference, Boolean keepRefInMemory, String fieldName){
 		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName(SparkDoVCF.class.getSimpleName());
-		ExonMapping em = new ExonMapping(gtfFile, mappingFile, reference, keepRefInMemory);
+		ExonMapping em = new ExonMapping(gtfFile, mappingFile, reference, keepRefInMemory, fieldName);
 		this.vcfEntries = new JavaSparkContext(conf).textFile(new File(file).getAbsolutePath())
 				.filter(s -> !s.startsWith("#"))
 				.map(s -> s.split("\t"))

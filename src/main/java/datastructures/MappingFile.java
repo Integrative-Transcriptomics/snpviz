@@ -19,7 +19,7 @@ public class MappingFile implements Serializable {
 	 */
 	private static final long serialVersionUID = 1284219139313387374L;
 	
-	private Map<String, Set<String>> ens2pdb = new HashMap<String, Set<String>>();
+	private Map<String, Set<String>> id2pdb = new HashMap<String, Set<String>>();
 	
 	private ID fromID = ID.Ensembl;
 	private ID pdb = ID.PDB;
@@ -30,7 +30,7 @@ public class MappingFile implements Serializable {
 	}
 
 	private void parse(String file) {
-		this.ens2pdb = new HashMap<String, Set<String>>();
+		this.id2pdb = new HashMap<String, Set<String>>();
 		try {
 			BufferedReader br = Utilities.getReader(file);
 			String currLine = "";
@@ -42,13 +42,13 @@ public class MappingFile implements Serializable {
 				for(String currFromId: splitted[this.fromID.getColumn()].split(";")){
 					currFromId = currFromId.trim();
 					Set<String> pdbIDs = new HashSet<String>();
-					if(this.ens2pdb.containsKey(currFromId)){
-						pdbIDs = this.ens2pdb.get(currFromId);
+					if(this.id2pdb.containsKey(currFromId)){
+						pdbIDs = this.id2pdb.get(currFromId);
 					}
 					for(String pdb: splitted[this.pdb.getColumn()].split(";")){
 						pdbIDs.add(pdb.trim());
 					}
-					this.ens2pdb.put(currFromId, pdbIDs);
+					this.id2pdb.put(currFromId, pdbIDs);
 				}
 			}
 		} catch (IOException e) {
@@ -56,9 +56,9 @@ public class MappingFile implements Serializable {
 		}
 	}
 	
-	public synchronized Set<String> getIDs(String ensID){
-		if(this.ens2pdb.containsKey(ensID)){
-			return this.ens2pdb.get(ensID);
+	public synchronized Set<String> getPDBIDs(String id){
+		if(this.id2pdb.containsKey(id)){
+			return this.id2pdb.get(id);
 		}else{
 			return new HashSet<String>();
 		}

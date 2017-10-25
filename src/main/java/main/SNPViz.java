@@ -33,7 +33,7 @@ public class SNPViz {
 	private VCFParser vcfInput;
 
 
-	public SNPViz(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile, Boolean runSpark, Boolean keepRefInMemory, ID fromID) {
+	public SNPViz(String mappingFile, String gtfFile, String vcfFile, String reference, String outFile, Boolean runSpark, Boolean keepRefInMemory, ID fromID, String fieldName) {
 		long start = System.currentTimeMillis();
 		this.mappingFile=new MappingFile(mappingFile,fromID);
 		long map = System.currentTimeMillis();
@@ -43,7 +43,7 @@ public class SNPViz {
 		long annotation = 0l;
 
 		if(runSpark){
-			SparkDoVCF sp = new SparkDoVCF(vcfFile, gtfFile, this.mappingFile, reference, keepRefInMemory);
+			SparkDoVCF sp = new SparkDoVCF(vcfFile, gtfFile, this.mappingFile, reference, keepRefInMemory, fieldName);
 			result = sp.getVCFEntries();
 			annotation = System.currentTimeMillis();
 		}else{
@@ -51,7 +51,7 @@ public class SNPViz {
 			long vcf = System.currentTimeMillis();
 			System.out.println("reading the vcfFile took "+(vcf-map)/1000+"s");
 
-			ExonMapping em = new ExonMapping(gtfFile, this.mappingFile, reference, keepRefInMemory);
+			ExonMapping em = new ExonMapping(gtfFile, this.mappingFile, reference, keepRefInMemory, fieldName);
 			long exon = System.currentTimeMillis();
 			System.out.println("reading the gtf file took "+(exon-vcf)/1000+"s" + "\t");
 			
@@ -98,6 +98,7 @@ public class SNPViz {
 		options.addOption("s", "spark", false, "run with apacheSpark parallelization");
 		options.addOption("k", "keep", false, "keep reference in Memory");
 		options.addOption("d", "id", true, "ID type for the genes ["+ID.EnsemblTRS+"]");
+		options.addOption("f", "fieldname", true, "The name of the gtf info field containing the ID ["+"transcript_id"+"]");
 		options.addOption(Option.builder("m")
 				.longOpt("idmap")
 				.required()
@@ -137,6 +138,7 @@ public class SNPViz {
 		Boolean runSpark = false;
 		Boolean keepRefInMemory = false;
 		ID fromID = ID.EnsemblTRS;
+		String fieldName = "transcript_id";
 
 		try {
 			CommandLine cmd = parser.parse(helpOptions, args);
@@ -178,6 +180,9 @@ public class SNPViz {
 					System.exit(1);
 				}
 			}
+			if(cmd.hasOption("f")) {
+				fieldName = cmd.getOptionValue("f");
+			}
 		} catch (ParseException e) {
 			helpformatter.printHelp(CLASS_NAME, options);
 			System.err.println(e.getMessage());
@@ -186,7 +191,7 @@ public class SNPViz {
 			System.exit(1);
 
 		}
-		new SNPViz(mappingFile, gtfFile, vcfFile, referenceFile, outFile, runSpark, keepRefInMemory, fromID);
+		new SNPViz(mappingFile, gtfFile, vcfFile, referenceFile, outFile, runSpark, keepRefInMemory, fromID, fieldName);
 
 		System.out.println("finished");
 	}

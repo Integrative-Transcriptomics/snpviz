@@ -1,8 +1,6 @@
 package datastructures;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -27,14 +25,15 @@ import utilities.Utilities;
 public class ExonMapping implements Serializable {
 
 	private static final long serialVersionUID = 5677894313743363829L;
-	Map<String, Map<Integer, Set<String>>> pos2ens;
-	Map<String, Set<Triplet<Integer, Integer, String>>> combinedMap;
-//	VCFParser vcfInput;
-	MappingFile mappingFile;
-	String referenceFile;
-	VCFEntry vcfEntry;
-	Map<String, String> reference;
-	Boolean keepRefInMemory = false;
+//	private Map<String, Map<Integer, Set<String>>> pos2ens;
+	private Map<String, Set<Triplet<Integer, Integer, String>>> combinedMap;
+//	private VCFParser vcfInput;
+	private MappingFile mappingFile;
+	private String referenceFile;
+	private VCFEntry vcfEntry;
+	private Map<String, String> reference;
+	private Boolean keepRefInMemory = false;
+	private String fieldName;
 
 //	public ExonMapping(String file, VCFEntry vcfEntry, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory){
 //		this.mappingFile = mappingFile;
@@ -47,10 +46,11 @@ public class ExonMapping implements Serializable {
 //		parse(file, vcfEntry);
 //	}
 
-	public ExonMapping(String file, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory){
+	public ExonMapping(String file, MappingFile mappingFile, String referenceFile, Boolean keepRefInMemory, String fieldName){
 		this.mappingFile = mappingFile;
 		this.referenceFile = referenceFile;
 		this.keepRefInMemory = keepRefInMemory;
+		this.fieldName = fieldName;
 		if(this.keepRefInMemory) {
 			parseAndKeepReference();
 		}
@@ -91,7 +91,7 @@ public class ExonMapping implements Serializable {
 	public VCFEntry analyzeEntry(VCFEntry vcfEntry){
 		Set<Triplet<Integer, Integer, String>> relevantExons = getRelevantExons(vcfEntry.getPosition(), vcfEntry.getReference());
 		for(Triplet<Integer, Integer, String> currExon: relevantExons){
-			Set<String> pdbIds = this.mappingFile.getIDs(currExon.getThird());
+			Set<String> pdbIds = this.mappingFile.getPDBIDs(currExon.getThird());
 			vcfEntry.addPdbIds(getPositionForIds(pdbIds, vcfEntry.getReference(), currExon.getFirst(), currExon.getSecond(), vcfEntry.getPosition(), vcfEntry.getRefBase(), vcfEntry.getAltBase()));
 		}
 		return vcfEntry;
@@ -112,6 +112,7 @@ public class ExonMapping implements Serializable {
 					continue;
 				}else{
 					result.add(currExon);
+					System.out.println(currExon.getThird());
 				}
 			}
 		}
@@ -182,7 +183,7 @@ public class ExonMapping implements Serializable {
 					String transcriptID = "";
 					for(String field: ids.split(";")){
 						field = field.trim();
-						if(field.contains("transcript_id")){
+						if(field.contains(fieldName)){
 							String[] splittedField = field.split(" ");
 							transcriptID = splittedField[1].trim().replace("\"", "");
 							break;
