@@ -1,0 +1,1 @@
+java -jar build/libs/snpviz-0.0.1-all.jar -g /homes/seitza/tmp/SNPViz_syphilis/NC_021490_modified.gff -k -v /homes/seitza/tmp/SNPViz_syphilis/snpTable.vcf -r /homes/seitza/tmp/SNPViz_syphilis/NC_021490.2.fasta -d UniProtKBAC -m /homes/seitza/tmp/SNPViz_syphilis/proteins_with_pdb.csv -s
